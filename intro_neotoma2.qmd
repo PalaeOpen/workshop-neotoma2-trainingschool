@@ -11,11 +11,11 @@ format:
     keep-md: true
     code-copy: true
     code-fold: show
-    embed-resources: true
+    #embed-resources: true
     code-line-numbers: true
-    theme: 
-      styles/custom_theme.scss
-    highlight-style: none
+    theme: flatly
+    #   styles/custom_theme.scss
+    #highlight-style: none
 ---
 
 # 1. Workshop overview and objectives
