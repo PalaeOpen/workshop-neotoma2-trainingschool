@@ -97,7 +97,7 @@ The `neotoma2` package provides programmatic access to the Neotoma database thro
 | ageof | An age which must be contained within the range of sample ages for a site. |
 
 ## Option 1 Site location: `loc` {.tabset}
-Using a bounding box and search for sites based on the geographical coordinates found in it. For instance we search all sites in Europe:
+Using a bounding box and search for sites based on the geographical coordinates found in it. For instance we search all sites in Europe. As there are more than 2000 we set `all_data = FALSE`:
 
 ```{r}
 europe <- list(geoJSON = '{"type": "Polygon",
@@ -118,10 +118,10 @@ Now we plot the resulting spatial object of the sites with the built-in `plotLea
 neotoma2::plotLeaflet(eu_sites) 
 ```
 
-We can also be more restrictive and add extra arguments in `get_sites()` and look for pollen datasets and certain site names if we know what site we are looking for 
+We can also be more restrictive and add extra arguments in `get_sites()` and look for pollen datasets and certain site names if we know what site we are looking for, or if we only know part of the name e.g. that is called lake in Czech: Jezero. 
 
 ```{r}
-ezero_pollen <- get_sites(datasettype="pollen", loc=europe$geoJSON, sitename = "%ezero%") #Note that % is a wildcard character
+ezero_pollen <- get_sites(datasettype="pollen", loc=europe$geoJSON, sitename = "%Jezero%") #Note that % is a wildcard character
 neotoma2::plotLeaflet(ezero_pollen) 
 
 ```
@@ -182,6 +182,8 @@ For that, we will use the site **Prášilské jezero**, a mountain lake located 
 pra_data <- neotoma2::get_sites(sitename = "Prášilské jezero") %>%
   neotoma2::get_datasets() %>% 
   neotoma2::get_downloads()
+pra_data # returns the site information
+datasets(pra_data) # provides an overview of the datasets aailable for that site
 ```
 
 In case the Neotoma API doesn't work, we have already downloaded and saved the site data
@@ -204,7 +206,7 @@ We can also check how many `collectionunits` and `datasettypes` the site has by 
 unique(allSamp$collunitid)
 unique(allSamp$datasettype)
 ```
-
+The `collectionunits` are the different cores that were taken and each can have several `datasettypes`.
 For some dataset types, or types of analyses some of columns stored in `samples()` may not be needed, however, for other dataset types they may be critically important. The neotoma2 package includes as many column names as possible to cover a wide range of community/ proxy needs.
 
 If you want to know what taxa we have in the record, you can use the function `taxa()` on the downloaded site object. This is basically the samples table with information about how many samples the taxon occurs, in how many sites (in this case only one). The `taxonid` values can be linked to the `taxonid` column in the `samples()`. This allows us to build taxon harmonization tables. But again, this is not the focus of this introductory part.
