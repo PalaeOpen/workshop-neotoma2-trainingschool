@@ -2,20 +2,22 @@
 title: "Accessing Paleoecological Data with neotoma2"
 subtitle: "PalaeOpen Training School — Sofia, 15–18 June 2026"
 author: "Xavier Benito"
+execute: 
+  echo: true
+  warning: false
+  message: false
+  error: false
 format:
   html:
-    #date: 29/05/2026
+    toc: true #table of contents
+    toc-location: right
     date-format: long
     date-modified: last-modified
-    toc: true
-    keep-md: true
     code-copy: true
     code-fold: show
-    #embed-resources: true
     code-line-numbers: true
     theme: flatly
-    #   styles/custom_theme.scss
-    #highlight-style: none
+    embed-resources: true #to allow portability of html files
 ---
 
 # 1. Workshop overview and objectives
@@ -39,11 +41,11 @@ The workshop combines short conceptual explanations with guided coding exercises
 
 ## Online resources
 
-1.  Code repository for the workshop: XXX
-2.  Neotoma Palaeoecology Database Manual: https://open.neotomadb.org/manual/
-3.  neotoma2 GitHub Repository: https://github.com/neotomadb/neotoma2 (including previous Neotoma workshop repositories)
-4.  PalaeOpen R Zulip channel: https://palaeopen.zulipchat.com/#narrow/channel/540741-it_r
-5.  [Neotoma Slack channel](https://neotomadb.slack.com/join/shared_invite/zt-cvsv53ep-wjGeCTkq7IhP6eUNA9NxYQ#/shared-invite/email) including general and specific channels such as help when using R
+1.  [Code repository for the workshop](https://github.com/PalaeOpen/workshop-neotoma2-trainingschool)
+2.  [Neotoma Palaeoecology Database Manual](https://open.neotomadb.org/manual/)
+3.  [neotoma2 GitHub Repository](https://github.com/neotomadb/neotoma2 (including previous Neotoma workshop repositories)
+4.  [PalaeOpen R Zulip channel](https://palaeopen.zulipchat.com/#narrow/channel/540741-it_r)
+5.  [Neotoma Slack channel](https://neotomadb.slack.com/join/shared_invite/zt-cvsv53ep-wjGeCTkq7IhP6eUNA9NxYQ#/shared-invite/email) 
 
 ## Install and load the necessary packages
 
@@ -53,7 +55,7 @@ This workflow relies on different R libraries, including tidyverse, geojsonsf an
 # Clean workspace first
 rm(list = ls())
 
-pacman::p_load(neotoma2, tidyverse, riojaPlot, ggplot2, janitor)
+pacman::p_load(neotoma2, tidyverse, ggplot2, janitor)
 ```
 
 R is highly dependent on the sequence in which libraries are activated. Common function names such as `filter()` exist in multiple packages (e.g., both dplyr and neotoma2). If a naming conflict occurs, R might attempt to apply the wrong function to your data object
@@ -70,6 +72,8 @@ The `neotoma2` package provides programmatic access to the Neotoma database thro
 -   Datasets
 -   Samples
 -   Taxa
+-   Counts
+-   Stratigraphic plots --> more 
 -   Chronologies --> Thomas' age-depth modeling workshop (link)
 
 
@@ -97,7 +101,7 @@ The `neotoma2` package provides programmatic access to the Neotoma database thro
 | ageof | An age which must be contained within the range of sample ages for a site. |
 
 ## Option 1 Site location: `loc` {.tabset}
-Using a bounding box and search for sites based on the geographical coordinates found in it. For instance we search all sites in Europe:
+Using a bounding box and search for sites based on the geographical coordinates found in it. For instance we search all sites in Europe. As there are more than 2000 we set `all_data = FALSE`:
 
 ```{r}
 europe <- list(geoJSON = '{"type": "Polygon",
@@ -118,7 +122,7 @@ Now we plot the resulting spatial object of the sites with the built-in `plotLea
 neotoma2::plotLeaflet(eu_sites) 
 ```
 
-We can also be more restrictive and add extra arguments in `get_sites()` and look for pollen datasets and certain site names if we know what site we are looking for 
+We can also be more restrictive and add extra arguments in `get_sites()` and look for pollen datasets and certain site names if we know what site we are looking for, or if we only know part of the name e.g. that is called lake in Bulgarian: ezero. 
 
 ```{r}
 ezero_pollen <- get_sites(datasettype="pollen", loc=europe$geoJSON, sitename = "%ezero%") #Note that % is a wildcard character
@@ -160,9 +164,9 @@ bulg_pollen <- bulgaria_sites %>%
 neotoma2::summary(bulg_pollen)
 ```
 
-## Excercise
+## Excercise #1
 Think about any other filtering criteria you want to apply to search for sites in Neotoma.
-**Hint**: You can type `?neotoma2::get_sites` and the helper function will open in your RStudio with the available search parameters.
+**Hint**: You can type `?neotoma2::get_sites()` and the helper function will open in your RStudio with the available search parameters.
 
 Work individually for about 15 minutes and then share with your peer next to you what you have found.
 
@@ -170,7 +174,7 @@ Work individually for about 15 minutes and then share with your peer next to you
 
 Up until now we have seen how to: 
 1.    Search for sites applying different criteria,
-2.    Plot where the site are located and,
+2.    Plot where the site(s) are located and,
 3.    Obtain the `collectionunits` and `datasets` that a `site` object contain.
 
 Functions like `get_sites()` or `get_datasets()` only pull down high-level metadata (site names, geographic coordinates, dataset IDs, etc) to keep things fast and avoid large files quering the API.
@@ -182,6 +186,16 @@ For that, we will use the site **Prášilské jezero**, a mountain lake located 
 pra_data <- neotoma2::get_sites(sitename = "Prášilské jezero") %>%
   neotoma2::get_datasets() %>% 
   neotoma2::get_downloads()
+
+pra_data # returns the site information
+datasets(pra_data) # provides an overview of the datasets available for that site
+
+```
+
+The function `cite_data()` pulls bibliographic information from the metadata included in the site object. For Prášilské Lake object which include pollen, diatoms, chironomids, and charcoal it will return a list of individual formatted citations and DOIs (Digital Object Identifiers) for each unique dataset so you can credit all the data contributors properly.
+
+```{r}
+neotoma2::cite_data(pra_data)
 ```
 
 In case the Neotoma API doesn't work, we have already downloaded and saved the site data
@@ -190,21 +204,22 @@ In case the Neotoma API doesn't work, we have already downloaded and saved the s
 ## saveRDS(pra_data, "data/PRA_download.RDS")
 ```
 
-For the downloaded site we now have information about all the collection units, the datasets, and, for each dataset, all the samples associated with the datasets. To extract all the samples we need to run the funcion `samples`
+For the downloaded site we now have information about all the collection units, the datasets, and, for each dataset, all the samples associated with the datasets. To extract all the samples we need to run the funcion `samples()`
 
 ```{r}
 #pra_data <- readRDS("data/PRA_download.RDS") #uncomment if you want/need to read in the donwloaded object 
-allSamp <- samples(pra_data)
-names(allSamp)
+pra_samples <- samples(pra_data)
+names(pra_samples)
 ```
+
 The resulting `data.frame` has 13735 rows and 38 variables. The reason is because the table is in **long** format. The opposite format is **wide** format, with sites/samples as rows, and taxa as columns. For certain community analysis this is the suggested format. But for now we continue with the **long** format.
 
 We can also check how many `collectionunits` and `datasettypes` the site has by calling:
 ```{r}
-unique(allSamp$collunitid)
-unique(allSamp$datasettype)
+unique(pra_samples$collunitid)
+unique(pra_samples$datasettype)
 ```
-
+The `collectionunits` are the different cores that were taken and each can have several `datasettypes`.
 For some dataset types, or types of analyses some of columns stored in `samples()` may not be needed, however, for other dataset types they may be critically important. The neotoma2 package includes as many column names as possible to cover a wide range of community/ proxy needs.
 
 If you want to know what taxa we have in the record, you can use the function `taxa()` on the downloaded site object. This is basically the samples table with information about how many samples the taxon occurs, in how many sites (in this case only one). The `taxonid` values can be linked to the `taxonid` column in the `samples()`. This allows us to build taxon harmonization tables. But again, this is not the focus of this introductory part.
@@ -214,28 +229,52 @@ pra_taxa <- neotoma2::taxa(pra_data)
 ```
 
 # Working with counts
-We now get the pollen counts from the **Prášilské jezero**. We filter by `elementtype=="pollen"` and calculate pollen proportions from count data:
+In many Neotoma datasets there exist samples that include different elements for the same taxon. For instance, in pollen datasets, it is common to find `element=pollen` and `element=stomate` for Pine. If we filter the taxa by `element=="pollen"` we might miss all the spores including *ferns* and *mosses*
+
+![Tilia file Prášilské jezero, pollen dataset](tilia_screenshoot.png)
+Another classifier of the taxon list in Neotoma is the `ecologicalgroup`. In Tilia this is shown in the column *Group*. The function `get_table()` returns a table for all the existing table names in Neotoma. For instance, below is the list found in `ecologicalgroup`.
 
 ```{r}
-pra_pollen_prop <- neotoma2::samples(pra_data) %>%
-  dplyr::filter(datasettype == "pollen") %>% #filter by datasettype
-  dplyr::filter(elementtype=="pollen") %>%   #in pollen samples there are different elements for the same taxon such as pollen and stomata. We pull in pollen grains only
+neotoma2::get_table("ecolgroups")
+```
+
+We now get the pollen counts from the **Prášilské jezero**. We first check which `ecologicalgroup` are found in the pollen dataset:
+
+```{r}
+pra_samples %>%
+  filter(datasettype=="pollen") %>%
+  pull(ecologicalgroup) %>% unique()
+```
+We are interested in pollen and spores, including ferns and mosses. So we filter pollen samples first by `ecologicalgroup == c("TRSH", "UPHE", "VACR")`
+
+| Code | Ecological group 
+| --------- | ----------- 
+| TRSH | Trees and Shrubs 
+| UPHE | Upland herbs 
+| VACR | Vascular cryptograms
+
+These group codes allow us to ignore things that might skew our pollen sums—like algae (AQUA) or fungal spores (FUNG); 
+some pollen samples can also include dinoflagellate cysts (DINO). This way we focus on these groups to exclude certain taxa that do no represent the terrestrial vegetation in the final pollen sum.
+
+```{r}
+pra_pollen_prop <- pra_samples %>%
+  dplyr::filter(ecologicalgroup %in% c("TRSH", "UPHE", "VACR")) %>%
+  dplyr::filter(elementtype %in% c("pollen", "spore")) %>%
+  dplyr::filter(units == "NISP") %>%
   dplyr::group_by(depth, age) %>%
   dplyr::mutate(pollen_count = sum(value, na.rm = TRUE)) %>%
   dplyr::group_by(variablename) %>% 
   dplyr::mutate(prop = value / pollen_count) %>% 
   dplyr::arrange(age) %>% #arrange table by increasing age
-  dplyr::select(depth, age, variablename, prop) %>% 
+  dplyr::select(depth, age, variablename, prop, ecologicalgroup) %>% 
   dplyr::mutate(prop = as.numeric(prop)) 
 
-# Why this happens with neotoma2
-# If you are encountering this while manually pivoting data extracted from neotoma2 (rather than using their built-in toWide() function), it is usually because:
-# Taxon synonyms: A single sample might have entries for both Pinus and Pinus undiff., which get cleaned/mapped into the same variable name.
-# Multiple elements: The dataset might contain multiple variable elements (e.g., both "pollen" and "stomata" for the same taxon) or different units (e.g., "percent" and "grains") in the same table.
-# If this is the case, filter down to a single element type or unit type using filter() before running your pivot!
-#   
-  
 ```
+
+## Excercise #2
+Using the `pra_samples` dataset, write a tidyverse pipeline to calculate the relative proportions of aquatic indicators relative to all the entire sample counts (i.e., terrestrial).
+
+
 
 We reconvene here the long vs wide format. It is useful to pivot the data to a “wide” table for use in other packages such as `vegan` or `cluster` to perform multivariate ordination and classification analyses. Wide format contains variablenames as column headings and we do this for the pollen dataset using `tidyr` of the [tidyverse](https://tidyverse.org) package
 
@@ -244,39 +283,44 @@ site_pollen_wide <- tidyr::pivot_wider(pra_pollen_prop,
                                       id_cols = c(depth, age),
                                       names_from = variablename,
                                       values_from = prop,
-                                      values_fill = 0) %>%
-  janitor::clean_names() #homogenize nomenclature of pollen taxa
+                                      values_fill = 0) 
 ```
 
-Because the pollen matrix contains 91 different taxa, plotting all of them would clutter the stratigraphic diagram. To keep the plot readable, we filter the dataset to include only the most abundant pollen taxa, that is, those with a relative abundance greater than 2% in at least one sample:
+Because the pollen matrix contains 91 different taxa, plotting all of them would clutter the stratigraphic diagram. To keep the plot readable, we filter the dataset to include only the most abundant pollen and spore taxa, that is, the top 15 most frequent taxa:
 
 ```{r}
-pra_pollen_prop_subset <- pra_pollen_prop %>%
-  group_by(variablename) %>%
-  filter(prop>0.02) #pollen taxa present with >2% relative abundance
-
-site_pollen_subset_wide <- tidyr::pivot_wider(pra_pollen_prop_subset,
-                                      id_cols = c(depth, age),
-                                      names_from = variablename,
-                                      values_from = prop,
-                                      values_fill = 0) %>%
-  janitor::clean_names() #homogenize nomenclature of pollen taxa
+pra_plot_taxa <- taxa(pra_data) %>% 
+  dplyr::filter(ecologicalgroup %in% c("TRSH", "VACR")) %>%
+  dplyr::filter(elementtype %in% c("pollen","spore")) %>%
+  dplyr::arrange(desc(samples)) %>% 
+  head(n = 15) 
 ```
 
 # Stratigraphic plot
-Here we use the `riojaPlot` package:
+There exists several packages to perform stratigraphic diagrams of your data. The data needs to be on long or wide format as a funciton of the package used:
+
+| Package | Data structure | function |
+| --------- | ----------- | ----------- |
+| *ggplot2* | long format | `ggplot()`|
+| *tidypaleo* | long format | `Stratiplot()`|
+| *analogue* | wide format | `ggplot()`|
+| *rioja* | wide format | `strat.plot()`|
+| *riojaPlot* | wide format | `riojaPlot()`|
+
+Here we use the `rioja` package and the `strat.plot` function:
 
 ```{r}
-riojaPlot(site_pollen_subset_wide[,-1:-2]*100, site_pollen_subset_wide[,1:2],
-                       selVars = names(site_pollen_subset_wide[,-1:-2]),
-                       scale.percent = TRUE,
-                       sec.yvar.name="age",
-                       plot.sec.axis = TRUE,
-                       srt.xlabel = 60,
-                       xRight = 0.85) 
+# subset the most frequent taxa from the pollen wide-format matrix
+df_subset <- site_pollen_wide[,-1:-2] %>% 
+  select(any_of(pra_plot_taxa$variablename))
+
+rioja::strat.plot(df_subset*100, yvar = site_pollen_wide$age,
+                          ylabel = "Calibrated Years BP",
+                          xlabel = "Diatom (%)",
+                          y.rev = TRUE,
+                          wa.order = "topleft", scale.percent = TRUE)
 
 ```
-
 
 
 
