@@ -55,7 +55,7 @@ This workflow relies on different R libraries, including tidyverse, geojsonsf an
 # Clean workspace first
 rm(list = ls())
 
-pacman::p_load(neotoma2, tidyverse, ggplot2, janitor)
+pacman::p_load(neotoma2, tidyverse, ggplot2)
 ```
 
 R is highly dependent on the sequence in which libraries are activated. Common function names such as `filter()` exist in multiple packages (e.g., both dplyr and neotoma2). If a naming conflict occurs, R might attempt to apply the wrong function to your data object
@@ -195,7 +195,7 @@ datasets(pra_data) # provides an overview of the datasets available for that sit
 The function `cite_data()` pulls bibliographic information from the metadata included in the site object. For Prášilské Lake object which include pollen, diatoms, chironomids, and charcoal it will return a list of individual formatted citations and DOIs (Digital Object Identifiers) for each unique dataset so you can credit all the data contributors properly.
 
 ```{r}
-neotoma2::cite_data(pra_data)
+#neotoma2::cite_data(pra_data)
 ```
 
 In case the Neotoma API doesn't work, we have already downloaded and saved the site data
@@ -207,7 +207,7 @@ In case the Neotoma API doesn't work, we have already downloaded and saved the s
 For the downloaded site we now have information about all the collection units, the datasets, and, for each dataset, all the samples associated with the datasets. To extract all the samples we need to run the funcion `samples()`
 
 ```{r}
-#pra_data <- readRDS("data/PRA_download.RDS") #uncomment if you want/need to read in the donwloaded object 
+#pra_data <- readRDS("data/PRA_download.RDS") #uncomment if you need to read in the downloaded object 
 pra_samples <- samples(pra_data)
 names(pra_samples)
 ```
@@ -232,11 +232,7 @@ pra_taxa <- neotoma2::taxa(pra_data)
 In many Neotoma datasets there exist samples that include different elements for the same taxon. For instance, in pollen datasets, it is common to find `element=pollen` and `element=stomate` for Pine. If we filter the taxa by `element=="pollen"` we might miss all the spores including *ferns* and *mosses*
 
 ![Tilia file Prášilské jezero, pollen dataset](tilia_screenshoot.png)
-Another classifier of the taxon list in Neotoma is the `ecologicalgroup`. In Tilia this is shown in the column *Group*. The function `get_table()` returns a table for all the existing table names in Neotoma. For instance, below is the list found in `ecologicalgroup`.
-
-```{r}
-neotoma2::get_table("ecolgroups")
-```
+Another classifier of the taxon list in Neotoma is the `ecologicalgroup`. In Tilia this is shown in the column *Group*. The function `get_table()` can be used to pull existing table names in Neotoma. For instance: `neotoma2::get_table("ecolgroups")`
 
 We now get the pollen counts from the **Prášilské jezero**. We first check which `ecologicalgroup` are found in the pollen dataset:
 
@@ -272,9 +268,9 @@ pra_pollen_prop <- pra_samples %>%
 ```
 
 ## Excercise #2
-Using the `pra_samples` dataset, write a tidyverse pipeline to calculate the relative proportions of aquatic indicators relative to all the entire sample counts (i.e., terrestrial).
 
-
+-   Using the `pra_samples` dataset, calculate the relative proportions of aquatic pollen taxa relative to all the entire sample counts (i.e., terrestrial). 
+-   What is the difference between filtering for any `elementtypes` or including all the `elementtypes` for the aquatic groups?
 
 We reconvene here the long vs wide format. It is useful to pivot the data to a “wide” table for use in other packages such as `vegan` or `cluster` to perform multivariate ordination and classification analyses. Wide format contains variablenames as column headings and we do this for the pollen dataset using `tidyr` of the [tidyverse](https://tidyverse.org) package
 
