@@ -54,8 +54,8 @@ This workflow relies on different R libraries, including tidyverse, geojsonsf an
 ```{r}
 # Clean workspace first
 rm(list = ls())
-
-pacman::p_load(neotoma2, tidyverse, ggplot2)
+install.packages("pacman") #install the library
+pacman::p_load(neotoma2, tidyverse, ggplot2, rioja)
 ```
 
 R is highly dependent on the sequence in which libraries are activated. Common function names such as `filter()` exist in multiple packages (e.g., both dplyr and neotoma2). If a naming conflict occurs, R might attempt to apply the wrong function to your data object
@@ -252,11 +252,17 @@ We are interested in pollen and spores, including ferns and mosses. So we filter
 These group codes allow us to ignore things that might skew our pollen sums—like algae (AQUA) or fungal spores (FUNG); 
 some pollen samples can also include dinoflagellate cysts (DINO). This way we focus on these groups to exclude certain taxa that do no represent the terrestrial vegetation in the final pollen sum.
 
+First we filter by `ecologicalgroup` and `elementtype` to get the counts:
 ```{r}
-pra_pollen_prop <- pra_samples %>%
+pra_pollen_counts <- pra_samples %>%
   dplyr::filter(ecologicalgroup %in% c("TRSH", "UPHE", "VACR")) %>%
   dplyr::filter(elementtype %in% c("pollen", "spore")) %>%
-  dplyr::filter(units == "NISP") %>%
+  dplyr::filter(units == "NISP") 
+```
+
+Then we calculate the pollen proportions for each taxon and arrange the table by increasing age
+```{r}
+pra_pollen_prop <- pra_pollen_counts %>%
   dplyr::group_by(depth, age) %>%
   dplyr::mutate(pollen_count = sum(value, na.rm = TRUE)) %>%
   dplyr::group_by(variablename) %>% 
@@ -275,7 +281,7 @@ pra_pollen_prop <- pra_samples %>%
 We reconvene here the long vs wide format. It is useful to pivot the data to a “wide” table for use in other packages such as `vegan` or `cluster` to perform multivariate ordination and classification analyses. Wide format contains variablenames as column headings and we do this for the pollen dataset using `tidyr` of the [tidyverse](https://tidyverse.org) package
 
 ```{r}
-site_pollen_wide <- tidyr::pivot_wider(pra_pollen_prop,
+pra_pollen_wide <- tidyr::pivot_wider(pra_pollen_prop,
                                       id_cols = c(depth, age),
                                       names_from = variablename,
                                       values_from = prop,
@@ -307,10 +313,10 @@ Here we use the `rioja` package and the `strat.plot` function:
 
 ```{r}
 # subset the most frequent taxa from the pollen wide-format matrix
-df_subset <- site_pollen_wide[,-1:-2] %>% 
+pra_pollen_freq <- pra_pollen_wide[,-1:-2] %>% 
   select(any_of(pra_plot_taxa$variablename))
 
-rioja::strat.plot(df_subset*100, yvar = site_pollen_wide$age,
+rioja::strat.plot(pra_pollen_freq*100, yvar = pra_pollen_wide$age,
                           ylabel = "Calibrated Years BP",
                           xlabel = "Diatom (%)",
                           y.rev = TRUE,
