@@ -54,7 +54,7 @@ This workflow relies on different R libraries, including tidyverse, geojsonsf an
 ```{r}
 # Clean workspace first
 rm(list = ls())
-install.packages("pacman") #install the library
+#install.packages("pacman") #install the library
 pacman::p_load(neotoma2, tidyverse, ggplot2, rioja)
 ```
 
@@ -76,6 +76,9 @@ The `neotoma2` package provides programmatic access to the Neotoma database thro
 -   Stratigraphic plots --> more 
 -   Chronologies --> Thomas' age-depth modeling workshop (link)
 
+## Neotoma UML diagram {.tabset}
+
+![Neotoma R Package UML diagram.](neotoma_uml.svg) 
 
 # Working with Sites
 
@@ -112,7 +115,7 @@ europe <- list(geoJSON = '{"type": "Polygon",
             [-30, 90],
             [-30, 30]]]}')
 
-eu_sites <- get_sites(loc = europe$geoJSON, all_data = FALSE) #if all_data = TRUE all available records will be queried.
+eu_sites <- get_sites(loc = europe$geoJSON, all_data = FALSE) #if all_data = TRUE all available records will be queried. with all_data = FALSE, only the first 25 sites will be queried
 neotoma2::summary(eu_sites) 
 ```
 
@@ -276,7 +279,6 @@ pra_pollen_prop <- pra_pollen_counts %>%
 ## Excercise #2
 
 -   Using the `pra_samples` dataset, calculate the relative proportions of aquatic pollen taxa relative to all the entire sample counts (i.e., terrestrial). 
--   What is the difference between filtering for any `elementtypes` or including all the `elementtypes` for the aquatic groups?
 
 We reconvene here the long vs wide format. It is useful to pivot the data to a “wide” table for use in other packages such as `vegan` or `cluster` to perform multivariate ordination and classification analyses. Wide format contains variablenames as column headings and we do this for the pollen dataset using `tidyr` of the [tidyverse](https://tidyverse.org) package
 
