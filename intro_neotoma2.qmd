@@ -20,7 +20,7 @@ format:
     embed-resources: true #to allow portability of html files
 ---
 
-# 1. Workshop overview and objectives
+# Workshop overview and objectives
 
 This workshop is designed to provide participants at the PalaeOpen Training School (Sofia, 15–19 June 2026) with an overview of the `neotoma2` R package and its use in obtaining and analysing data from the Neotoma Paleoecology Database.
 
@@ -62,18 +62,19 @@ R is highly dependent on the sequence in which libraries are activated. Common f
 
 To prevent these namespace collisions, it is best practice to explicitly declare the source package using the double-colon operator (for example, `neotoma2::filter()` or `dplyr::filter()`). This ensures R executes the exact command you intend.
 
-# 2. Introduction to neotoma2
+# Introduction to neotoma2
 
 The `neotoma2` package provides programmatic access to the Neotoma database through R. The database uses an application programming interface (API), which serves the [online explorer](https://apps.neotomadb.org/explorer/) as well as [Tilia](https://www.neotomadb.org/apps/tilia)
 
 ## Key Concepts
 
 -   Sites
+-   Collection Units
 -   Datasets
 -   Samples
 -   Taxa
 -   Counts
--   Stratigraphic plots --> more 
+-   Stratigraphic plots -->  more in day 3 Thursday 18/07/26 (link)
 -   Chronologies --> Thomas' age-depth modeling workshop (link)
 
 ## Neotoma UML diagram {.tabset}
@@ -306,8 +307,8 @@ There exists several packages to perform stratigraphic diagrams of your data. Th
 | Package | Data structure | function |
 | --------- | ----------- | ----------- |
 | *ggplot2* | long format | `ggplot()`|
-| *tidypaleo* | long format | `Stratiplot()`|
-| *analogue* | wide format | `ggplot()`|
+| *tidypaleo* | long format | `ggplot()`|
+| *analogue* | wide format | `Stratiplot()`|
 | *rioja* | wide format | `strat.plot()`|
 | *riojaPlot* | wide format | `riojaPlot()`|
 
