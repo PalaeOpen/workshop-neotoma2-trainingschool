@@ -236,10 +236,9 @@ pra_taxa <- neotoma2::taxa(pra_data)
 In many Neotoma datasets there exist samples that include different elements for the same taxon. For instance, in pollen datasets, it is common to find `element=pollen` and `element=stomate` for Pine. If we filter the taxa by `element=="pollen"` we might miss all the spores including *ferns* and *mosses*
 
 ![Tilia file Prášilské jezero, pollen dataset](tilia_screenshoot.png)
-Another classifier of the taxon list in Neotoma is the `ecologicalgroup`. In Tilia this is shown in the column *Group*. The function `get_table()` can be used to pull existing table names in Neotoma. For instance: `neotoma2::get_table("ecolgroups")`
+Another classifier of the taxon list in Neotoma is the `ecologicalgroup`. In Tilia this is shown in the column *Group*. The function `get_table()` can be used to pull existing table names in Neotoma. For instance, to see description of ecological groups: `neotoma2::get_table("ecolgrouptypes", limit = 100)`
 
 We now get the pollen counts from the **Prášilské jezero**. We first check which `ecologicalgroup` are found in the pollen dataset:
-
 ```{r}
 pra_samples %>%
   filter(datasettype=="pollen") %>%
