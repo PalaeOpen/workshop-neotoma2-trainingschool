@@ -1,6 +1,6 @@
 ---
 title: "Accessing Paleoecological Data with neotoma2"
-subtitle: "PalaeOpen Training School — Sofia, 15–18 June 2026"
+subtitle: "PalaeOpen Training School — Sofia, 16 June 2026"
 author: "Xavier Benito"
 execute: 
   echo: true
@@ -22,7 +22,7 @@ format:
 
 # Workshop overview and objectives
 
-This workshop is designed to provide participants at the PalaeOpen Training School (Sofia, 15–19 June 2026) with an overview of the `neotoma2` R package and its use in obtaining and analysing data from the Neotoma Paleoecology Database.
+This workshop is designed to provide participants at the PalaeOpen Training School (Sofia, 15–19 June 2026) with an overview of the `neotoma2` R package and its use in obtaining and analyzing data from the Neotoma Paleoecology Database.
 
 The workshop combines short conceptual explanations with guided coding exercises using R. We will be using:
 
@@ -35,7 +35,7 @@ The workshop combines short conceptual explanations with guided coding exercises
 2.  Search for sites using site names and geographical coordinates
 3.  Filter results using temporal and spatial parameters
 4.  Obtain sample data for selected datasets
-5.  Extract and inspect pollen datasets from the Neotoma Paleoecology Database
+5.  Extract and inspect pollen datasets from the target lake site
 6.  Perform basic exploratory analysis and visualization of pollen data
 7.  Build reproducible workflows using Quarto
 
@@ -49,7 +49,7 @@ The workshop combines short conceptual explanations with guided coding exercises
 
 ## Install and load the necessary packages
 
-This workflow relies on different R libraries, including tidyverse, geojsonsf and leaflet, to handle geographic data and interactive mapping. To streamline the setup, we utilize the pacman management tool. If any required package is missing from your local environment, pacman will automatically download and install it before loading.
+This workflow relies on different R libraries to handle geographic data and interactive mapping. To streamline the setup, we use the `pacman` package. If any required package is missing from your local environment, `pacman` will automatically download and install it before loading.
 
 ```{r}
 # Clean workspace first
@@ -74,12 +74,12 @@ The `neotoma2` package provides programmatic access to the Neotoma database thro
 -   Samples
 -   Taxa
 -   Counts
--   Stratigraphic plots -->  more in day 3 Thursday 18/07/26 (link)
--   Chronologies --> Thomas' age-depth modeling workshop (link)
+-   Stratigraphic plots -->  more in day 3 Thursday 18/07/26 [link](https://github.com/PalaeOpen/workshop-neotoma2-stratplots-trainingschool)
+-   Chronologies --> see Thomas' age-depth modeling workshop [link](https://github.com/PalaeOpen/workshop_age-depth_trainingschool)
 
 ## Neotoma UML diagram {.tabset}
 
-![Neotoma R Package UML diagram.](neotoma_uml.svg) 
+![Neotoma R Package UML diagram.](images/neotoma_uml.svg) 
 
 # Working with Sites
 
@@ -148,7 +148,7 @@ neotoma2::summary(bulgaria_sites)
 
 A `sites` object contains `collectionunits` which contain `datasets`. From the table above we can see that some of the sites we have looked at contain different `dataset` types. We can also see that for each site, different `collectionunits` (i.e., usually cores) can be found. 
 
-Having a `sites` object we can directly call `get_datasets()` to pull in more metadata about the datasets. At any time we can use `datasets()` to get more information about any datasets that a sites object may contain. Below we compare the output of `datasets(bulgaria_sites)` to the output of a similar call using the following:
+Having a `sites` object we can directly call `get_datasets()` to pull in more metadata about the datasets. At any time we can use `datasets()` to get more information about any datasets that a sites object may contain. Below we compare the output of `summary(bulgaria_sites)` to the output of a similar call using the following:
 
 ```{r}
 datasets(bulgaria_sites)
@@ -158,7 +158,7 @@ bulgaria_datasets <- get_datasets(bulgaria_sites)
 # Filtering records
 It is sometimes recommended to do some filtering before we download the samples contained in the `dataset` or `site` objects.
 
-If we choose to pull in information about only a single dataset type, or if there is additional filtering we want to do before we download the data, we can use the filter() function. For example, if we only want pollen records from all bulgarian datasets, and want records with known chronologies, we can filter:
+If we choose to pull in information about only a single dataset type, or if there is additional filtering we want to do before we download the data, we can use the `filter()` function. For example, if we only want pollen records from all bulgarian datasets, and want records with known chronologies, we can filter:
 
 ```{r}
 bulg_pollen <- bulgaria_sites %>%
@@ -170,7 +170,7 @@ neotoma2::summary(bulg_pollen)
 
 ## Excercise #1
 Think about any other filtering criteria you want to apply to search for sites in Neotoma.
-**Hint**: You can type `?neotoma2::get_sites()` and the helper function will open in your RStudio with the available search parameters.
+**Hint**: You can type `?neotoma2::get_sites` and the helper function will open in your RStudio with the available search parameters.
 
 Work individually for about 15 minutes and then share with your peer next to you what you have found.
 
@@ -184,7 +184,7 @@ Up until now we have seen how to:
 Functions like `get_sites()` or `get_datasets()` only pull down high-level metadata (site names, geographic coordinates, dataset IDs, etc) to keep things fast and avoid large files quering the API.
 To populate that object with the detailed data—like analysis units, sample depth, chronologies, and taxon counts, we need to pass it into the `get_downloads()` function.
 
-For that, we will use the site **Prášilské jezero**, a mountain lake located in Czechia (Šumava Mts.). This site has been analyzed for several proxies, including pollen, diatoms, chironomids and charcoal.
+For that, we will use the site [**Prášilské jezero**](https://data.neotomadb.org/47518), a mountain lake located in Czechia (Šumava Mts.). This site has been analyzed for several proxies, including pollen, diatoms, chironomids, charcoal, and geochronology.
 
 ```{r}
 pra_data <- neotoma2::get_sites(sitename = "Prášilské jezero") %>%
@@ -199,7 +199,7 @@ datasets(pra_data) # provides an overview of the datasets available for that sit
 The function `cite_data()` pulls bibliographic information from the metadata included in the site object. For Prášilské Lake object which include pollen, diatoms, chironomids, and charcoal it will return a list of individual formatted citations and DOIs (Digital Object Identifiers) for each unique dataset so you can credit all the data contributors properly.
 
 ```{r}
-#neotoma2::cite_data(pra_data)
+neotoma2::cite_data(pra_data)
 ```
 
 In case the Neotoma API doesn't work, we have already downloaded and saved the site data
@@ -216,27 +216,26 @@ pra_samples <- samples(pra_data)
 names(pra_samples)
 ```
 
-The resulting `data.frame` has 13735 rows and 38 variables. The reason is because the table is in **long** format. The opposite format is **wide** format, with sites/samples as rows, and taxa as columns. For certain community analysis this is the suggested format. But for now we continue with the **long** format.
+The resulting `data.frame` has 13735 rows and 38 variables. The reason is because the table is in **long** format. The opposite format is **wide** format, with samples as rows, and variables as columns; the latter format is preferred for certain community analysis. But for now we continue with the **long** format.
 
 We can also check how many `collectionunits` and `datasettypes` the site has by calling:
 ```{r}
 unique(pra_samples$collunitid)
 unique(pra_samples$datasettype)
 ```
-The `collectionunits` are the different cores that were taken and each can have several `datasettypes`.
-For some dataset types, or types of analyses some of columns stored in `samples()` may not be needed, however, for other dataset types they may be critically important. The neotoma2 package includes as many column names as possible to cover a wide range of community/ proxy needs.
+Generally, the `collectionunits` are the different cores that were taken and each can have several `datasettypes`. For some `datasettypes`, or types of analyses some of columns stored in `samples()` may not be needed, however, for other dataset types they may be important. The `neotoma2` package includes as many column names as possible to cover a wide range of community/ proxy needs.
 
-If you want to know what taxa we have in the record, you can use the function `taxa()` on the downloaded site object. This is basically the samples table with information about how many samples the taxon occurs, in how many sites (in this case only one). The `taxonid` values can be linked to the `taxonid` column in the `samples()`. This allows us to build taxon harmonization tables. But again, this is not the focus of this introductory part.
+If you want to know what taxa we have in the record, you can use the function `taxa()` on the downloaded site object. This is basically the samples table with information about how many samples the taxon occurs, and in how many sites (in this case only one because we have filtered datasets and samples for *Prášilské jezero*). The `taxonid` values can be linked to the `taxonid` column in the `samples()`. This allows us to build taxon harmonization tables. However, this is not the focus of this introductory part.
 
 ```{r}
 pra_taxa <- neotoma2::taxa(pra_data)
 ```
 
 # Working with counts
-In many Neotoma datasets there exist samples that include different elements for the same taxon. For instance, in pollen datasets, it is common to find `element=pollen` and `element=stomate` for Pine. If we filter the taxa by `element=="pollen"` we might miss all the spores including *ferns* and *mosses*
+In many Neotoma datasets there exist samples that include different elements of analyses for the same taxon. For instance, in pollen datasets, it is common to find `element=pollen` and `element=stomate` for Pine. If we filter the taxa by `element=="pollen"` we might miss all the spores including *ferns* and *mosses*
 
-![Tilia file Prášilské jezero, pollen dataset](tilia_screenshoot.png)
-Another classifier of the taxon list in Neotoma is the `ecologicalgroup`. In Tilia this is shown in the column *Group*. The function `get_table()` can be used to pull existing table names in Neotoma. For instance, to see description of ecological groups: `neotoma2::get_table("ecolgrouptypes", limit = 100)`
+![Tilia file Prášilské jezero, pollen dataset](images/tilia_screenshoot.png)
+A very useful classifier of the taxon list in Neotoma is the `ecologicalgroup`. In Tilia this is shown in the column *Group*. The function `get_table()` can be used to pull existing table names in Neotoma. For instance, to see description of ecological groups: `neotoma2::get_table("ecolgrouptypes", limit = 100)`
 
 We now get the pollen counts from the **Prášilské jezero**. We first check which `ecologicalgroup` are found in the pollen dataset:
 ```{r}
@@ -244,7 +243,7 @@ pra_samples %>%
   filter(datasettype=="pollen") %>%
   pull(ecologicalgroup) %>% unique()
 ```
-We are interested in pollen and spores, including ferns and mosses. So we filter pollen samples first by `ecologicalgroup == c("TRSH", "UPHE", "VACR")`
+We are interested in pollen and spores, including ferns and mosses. So we filter pollen samples first by `ecologicalgroup %in% c("TRSH", "UPHE", "VACR")`
 
 | Code | Ecological group 
 | --------- | ----------- 
@@ -252,8 +251,7 @@ We are interested in pollen and spores, including ferns and mosses. So we filter
 | UPHE | Upland herbs 
 | VACR | Vascular cryptograms
 
-These group codes allow us to ignore things that might skew our pollen sums—like algae (AQUA) or fungal spores (FUNG); 
-some pollen samples can also include dinoflagellate cysts (DINO). This way we focus on these groups to exclude certain taxa that do no represent the terrestrial vegetation in the final pollen sum.
+These group codes allow us to ignore things that might skew our pollen sums—like algae (AQUA) or fungal spores (FUNG); even some pollen samples can also include dinoflagellate cysts (DINO). This way we focus on these groups to exclude certain taxa that do no represent the terrestrial vegetation in the final pollen sum.
 
 First we filter by `ecologicalgroup` and `elementtype` to get the counts:
 ```{r}
@@ -271,8 +269,8 @@ pra_pollen_prop <- pra_pollen_counts %>%
   dplyr::group_by(variablename) %>% 
   dplyr::mutate(prop = value / pollen_count) %>% 
   dplyr::arrange(age) %>% #arrange table by increasing age
-  dplyr::select(depth, age, variablename, prop, ecologicalgroup) %>% 
-  dplyr::mutate(prop = as.numeric(prop)) 
+  dplyr::select(depth, age, variablename, prop, ecologicalgroup) %>% #select only relevant columns
+  dplyr::mutate(prop = as.numeric(prop)) #make sure proportions are numeric
 
 ```
 
@@ -294,7 +292,7 @@ Because the pollen matrix contains 91 different taxa, plotting all of them would
 
 ```{r}
 pra_plot_taxa <- taxa(pra_data) %>% 
-  dplyr::filter(ecologicalgroup %in% c("TRSH", "VACR")) %>%
+  dplyr::filter(ecologicalgroup %in% c("TRSH", "UPHE", "VACR")) %>%
   dplyr::filter(elementtype %in% c("pollen","spore")) %>%
   dplyr::arrange(desc(samples)) %>% 
   head(n = 15) 
@@ -320,13 +318,27 @@ pra_pollen_freq <- pra_pollen_wide[,-1:-2] %>%
 
 rioja::strat.plot(pra_pollen_freq*100, yvar = pra_pollen_wide$age,
                           ylabel = "Calibrated Years BP",
-                          xlabel = "Diatom (%)",
                           y.rev = TRUE,
                           wa.order = "topleft", scale.percent = TRUE)
 
 ```
 
+If you are happy and want to save the resulting plot:
+```{r}
+#| eval: false
+#| include: true
+pdf("pollen_plot.pdf", width = 10, height = 8)
 
+rioja::strat.plot(pra_pollen_freq*100, yvar = pra_pollen_wide$age,
+                          ylabel = "Calibrated Years BP",
+                          y.rev = TRUE,
+                          wa.order = "topleft", scale.percent = TRUE)
+dev.off()
+```
+
+
+# Conclusion
+We have covered different steps to query the Neotoma Palaeoecological Database and get samples from the selected dataset to perform a basic stratigraphic plot. We hope you can use this example workflow as a template for your own work.
 
 
 
