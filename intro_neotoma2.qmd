@@ -43,7 +43,7 @@ The workshop combines short conceptual explanations with guided coding exercises
 
 1.  [Code repository for the workshop](https://github.com/PalaeOpen/workshop-neotoma2-trainingschool)
 2.  [Neotoma Palaeoecology Database Manual](https://open.neotomadb.org/manual/)
-3.  [neotoma2 GitHub Repository](https://github.com/neotomadb/neotoma2 (including previous Neotoma workshop repositories)
+3.  [neotoma2 GitHub Repository](https://github.com/neotomadb/neotoma2) Including previous Neotoma workshop repositories
 4.  [PalaeOpen R Zulip channel](https://palaeopen.zulipchat.com/#narrow/channel/540741-it_r)
 5.  [Neotoma Slack channel](https://neotomadb.slack.com/join/shared_invite/zt-cvsv53ep-wjGeCTkq7IhP6eUNA9NxYQ#/shared-invite/email) 
 
@@ -212,6 +212,7 @@ For the downloaded site we now have information about all the collection units, 
 
 ```{r}
 #pra_data <- readRDS("data/PRA_download.RDS") #uncomment if you need to read in the downloaded object 
+neotoma2::summary(pra_data)
 pra_samples <- samples(pra_data)
 names(pra_samples)
 ```
@@ -275,8 +276,7 @@ pra_pollen_prop <- pra_pollen_counts %>%
 ```
 
 ## Excercise #2
-
--   Using the `pra_samples` dataset, calculate the relative proportions of aquatic pollen taxa relative to all the entire sample counts (i.e., terrestrial). 
+Using the `pra_samples` object, calculate the relative proportions of aquatic pollen taxa relative to all the entire sample counts. 
 
 We reconvene here the long vs wide format. It is useful to pivot the data to a “wide” table for use in other packages such as `vegan` or `cluster` to perform multivariate ordination and classification analyses. Wide format contains variablenames as column headings and we do this for the pollen dataset using `tidyr` of the [tidyverse](https://tidyverse.org) package
 
